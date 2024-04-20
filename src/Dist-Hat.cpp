@@ -449,5 +449,5 @@ void loop(){
 		xEventGroupSetBits(mainEventGroup, SEND_DATA);// Set the SEND_DATA bit to send data to the web UI
 	}
 
-	xTaskDelayUntil(&lastLoopStartTime, readSensorsInterval);// Delay for readSensorsInterval between reads
+	vTaskDelayUntil(&lastLoopStartTime, readSensorsInterval);// Delay for readSensorsInterval between reads
 }
