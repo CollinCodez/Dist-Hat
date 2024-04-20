@@ -8,7 +8,7 @@
 #include <ESPAsyncWebServer.h>		// This will automatically use whatever core is available, at priority 3
 #include <ElegantOTA.h>				// Library for Over The Air (OTA) updates
 
-#include <SPIFFS.h>
+// #include <SPIFFS.h>
 
 
 
@@ -118,6 +118,21 @@ void initWiFi(){
 
 
 
+// // Initialize SPIFFS
+// void initSPIFFS() {
+// 	if (!SPIFFS.begin(true)) {
+// 		#if SERIAL_ENABLED
+// 			Serial.println("An Error has occurred while mounting SPIFFS");
+// 		#endif
+// 	}
+// 	#if SERIAL_ENABLED
+// 		Serial.println("SPIFFS mounted successfully");
+// 	#endif
+// }
+
+
+
+
 
 //======================================================================================================
 //	Web Socket Server Functions
@@ -149,7 +164,7 @@ void selectCommand(char* msg){
 		return;
 	}
 
-	const char* cmd = doc["cmd"];// Get the command from the JSON message
+	// const char* cmd = doc["cmd"];// Get the command from the JSON message
 
 	// Check what the message is and set the appropriate bit in the event group
 	{
@@ -173,7 +188,7 @@ void onEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventTyp
 	} else if(type == WS_EVT_DISCONNECT){
 		//client disconnected
 		#if SERIAL_ENABLED
-			Serial.printf("ws[%s][%u] disconnect: %u\n", server->url(), client->id());
+			Serial.printf("ws[%s][%u] disconnect: %u\n", server->url(), client->id(), client->id());
 		#endif
 	} else if(type == WS_EVT_ERROR){
 		//error was received from the other end
@@ -346,7 +361,7 @@ void readDistance(uint8_t sensorNum){
 
 
 void setMotorPWM(uint8_t motor){
-	uint16_t tmp = map(duration[motor], 0, MaxDurration, 0, motorAbsMaxSpeed);// Map the duration to the motor speed
+	uint16_t tmp = map(duration[motor], MaxDurration, 0, 0, motorAbsMaxSpeed);// Map the duration to the motor speed
 	ledcWrite(motor, tmp);	// Set the PWM signal to the motor
 }
 
@@ -364,6 +379,7 @@ void setup(){
 		Serial.begin(115200);
 	#endif
 
+	// initSPIFFS();
 	initWiFi();
 	jsonSemaphore = xSemaphoreCreateMutex();// Create a semaphore to control
 	if( jsonSemaphore != NULL ) {
@@ -383,6 +399,14 @@ void setup(){
 	ElegantOTA.begin(&server);	// Prep the ElegantOTA server (Over The Air updates)
 	initWebSocket();			// Prep the WebSocket server
 	server.begin();				// Start the web server. Automatically makes a new task at priority 3, on whatever core is available.
+
+
+	// // Route for root / web page
+	// server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
+	// 	request->send(SPIFFS, "/index.html", "text/html",false);
+	// });
+
+	// server.serveStatic("/", SPIFFS, "/");
 
 	// Create the event group
 	mainEventGroup = xEventGroupCreate();
