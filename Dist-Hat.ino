@@ -88,8 +88,8 @@ const uint16_t MaxDurration = 30000;// Maximum duration for the pulseIn function
 
 
 // Motor Variables
-const uint16_t motorPWMFreq = 5000;				// Frequency for the PWM Output signal to the motors. This will also work with up to a max resolution of 13 bits
-const uint8_t motorPWMResolution = 10;			// 10 bit resolution for PWM. We may want to try a higher resolution at some point
+const uint16_t motorPWMFreq = 1000;				// Frequency for the PWM Output signal to the motors. This will also work with up to a max resolution of 13 bits
+const uint8_t motorPWMResolution = 12;			// 10 bit resolution for PWM. We may want to try a higher resolution at some point
 const uint16_t motorAbsMaxSpeed = (1 << (motorPWMResolution)) - 1;// Absolute maximum speed of the motor. 1023 for 10 bit PWM, 4095 for 12 bit PWM. This is the maximum value that can be sent to the motor driver
 
 
@@ -314,16 +314,16 @@ int asyncLogPrintf(const char *format, va_list args) {
 
 // Task to Send Data to Web UI
 void sendDataToUI(void *pvParameters){
-	#if SERIAL_ENABLED
+	/*#if SERIAL_ENABLED
 		Serial.println("Send Data to UI Task Running");
-	#endif
+	#endif*/
 	while(true){
 		// Wait for the SEND_DATA bit to be set
 		EventBits_t bits = xEventGroupWaitBits(mainEventGroup, SEND_DATA, pdTRUE, pdFALSE, pdMS_TO_TICKS(readSensorsInterval));
 		if((bits & SEND_DATA) == SEND_DATA){
-			#if SERIAL_ENABLED
+			/*#if SERIAL_ENABLED
 				Serial.println("sendDataToUI Task: Sending Data to Web UI Triggered\n");
-			#endif
+			#endif*/
 
 			xSemaphoreTake(jsonSemaphore, portMAX_DELAY);// Wait for the JSON object to be free (not being sent to the web UI
 
@@ -367,17 +367,17 @@ void triggerSensor(){
 void readDistance(uint8_t sensorNum){
 	// Read the distance from the sensor
 	duration[sensorNum] = pulseIn(echoPins[sensorNum], HIGH);
-	cm[sensorNum] = (duration[sensorNum]/2) / 29.1;
+	//cm[sensorNum] = (duration[sensorNum]/2) / 29.1;
 	inches[sensorNum] = (duration[sensorNum]/2) / 74;
 
-	#if SERIAL_ENABLED
+	/*#if SERIAL_ENABLED
 		Serial.printf("Distance for Sensor %d: ", sensorNum);
-		Serial.print(cm[sensorNum]);
-		Serial.print("cm\t");
+		//Serial.print(cm[sensorNum]);
+		//Serial.print("cm\t");
 		Serial.print(inches[sensorNum]);
 		Serial.print("in");
 		Serial.println();
-	#endif
+	#endif*/
 
 }
 
@@ -385,7 +385,7 @@ void readDistance(uint8_t sensorNum){
 
 
 void setMotorPWM(uint8_t motor){
-	uint16_t tmp = map(constrain(inches[motor], 1, 150), 150, 0, 0, motorAbsMaxSpeed);// Map the duration to the motor speed
+	uint16_t tmp = map(constrain(inches[motor], 24, 156), 156, 0, 0, motorAbsMaxSpeed);// Map the duration to the motor speed
 	ledcWrite(motor, tmp);	// Set the PWM signal to the motor
   // ledcWrite(motor, motorAbsMaxSpeed);
 }
@@ -399,14 +399,14 @@ void buzMotorTask(void *pvParameters){
 	uint8_t sensor = *tmp;
 
 	while(true){
-		if(inches[sensor] < 30){
+		if(inches[sensor] < 24){
 			ledcWrite(sensor, motorAbsMaxSpeed);
-			vTaskDelay(pdMS_TO_TICKS(100));
+			vTaskDelay(pdMS_TO_TICKS(50));
 			ledcWrite(sensor, 0);
-			vTaskDelay(pdMS_TO_TICKS(100));
+			vTaskDelay(pdMS_TO_TICKS(50));
 		}else{
 			setMotorPWM(sensor);
-			vTaskDelay(pdMS_TO_TICKS(100));
+			vTaskDelay(pdMS_TO_TICKS(50));
 		}
 
 	}
@@ -518,8 +518,9 @@ void loop(){
 		selectMuxChannel(i);
 		triggerSensor();
 		readDistance(i);
+		delay(100);
 		// setMotorPWM(i);
-	}
+	} 
 
 	// prep data to send to web server
 	// JsonArray durVals = messageJSON["durVals"].to<JsonArray>();
