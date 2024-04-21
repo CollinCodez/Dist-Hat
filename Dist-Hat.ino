@@ -388,6 +388,28 @@ void setMotorPWM(uint8_t motor){
 
 
 
+// Task to buz motor
+void buzMotorTask(void *pvParameters){
+	uint8_t* tmp = (uint8_t*)pvParameters;
+	uint8_t sensor = *tmp;
+
+	while(true){
+		if(inches[sensor] < 30){
+			ledcWrite(sensor, motorAbsMaxSpeed);
+			vTaskDelay(pdMS_TO_TICKS(100));
+			ledcWrite(sensor, 0);
+			vTaskDelay(pdMS_TO_TICKS(100));
+		}else{
+			setMotorPWM(sensor);
+			vTaskDelay(pdMS_TO_TICKS(100));
+		}
+
+	}
+}
+
+
+
+
 
 //======================================================================================================
 //	 Main Code
@@ -443,6 +465,21 @@ void setup(){
 		&sendDataToUITask,		// Task Handle
 		0						// Core 0
 	);
+
+
+
+	// Create the tasks to buzz the motors
+	for(int i = 0; i < NUM_SENSORS; i++){
+		xTaskCreatePinnedToCore(
+			buzMotorTask,		// Task Function
+			"Buzz Motor",		// Task Name
+			1000,				// Stack Size, should check utilization later with uxTaskGetStackHighWaterMark
+			(void*)i,			// Parameters
+			0,					// Priority 3, so it is at the same priority as the recieving data task. This is to help prevent the two from getting locked up
+			NULL,				// Task Handle
+			0					// Core 0
+		);
+	}
 
 
 
