@@ -14,14 +14,16 @@
 
 #define SERIAL_ENABLED 1 // Set to 1 to enable Serial Monitor Debugging]
 
-#define NUM_SENSORS 8
+#define NUM_SENSORS 5
 
 
 //======================================================================================================
 //	Hardware Connections
 //======================================================================================================
 
-const gpio_num_t echoPins[] = {GPIO_NUM_36, GPIO_NUM_39, GPIO_NUM_34, GPIO_NUM_35, GPIO_NUM_32, GPIO_NUM_33, GPIO_NUM_25, GPIO_NUM_26};
+// const gpio_num_t echoPins[] = {GPIO_NUM_36, GPIO_NUM_39, GPIO_NUM_34, GPIO_NUM_35, GPIO_NUM_32, GPIO_NUM_33, GPIO_NUM_25, GPIO_NUM_26};
+// const gpio_num_t echoPins[] = {GPIO_NUM_26, GPIO_NUM_25, GPIO_NUM_33, GPIO_NUM_32, GPIO_NUM_35, GPIO_NUM_34, GPIO_NUM_39, GPIO_NUM_36};
+const gpio_num_t echoPins[] = {GPIO_NUM_25, GPIO_NUM_33, GPIO_NUM_34, GPIO_NUM_39, GPIO_NUM_36};
 
 
 const gpio_num_t MuxAPin = GPIO_NUM_27;// LSB of the Mux
@@ -29,8 +31,9 @@ const gpio_num_t MuxBPin = GPIO_NUM_14;
 const gpio_num_t MuxCPin = GPIO_NUM_12;// MSB of the Mux
 const gpio_num_t MuxSigPin = GPIO_NUM_13;
 
-const gpio_num_t motorPins[] = {GPIO_NUM_19, GPIO_NUM_18, GPIO_NUM_5, GPIO_NUM_17, GPIO_NUM_16, GPIO_NUM_4, GPIO_NUM_2, GPIO_NUM_15};
-
+// const gpio_num_t motorPins[] = {GPIO_NUM_19, GPIO_NUM_18, GPIO_NUM_5, GPIO_NUM_17, GPIO_NUM_16, GPIO_NUM_4, GPIO_NUM_2, GPIO_NUM_15};
+// const gpio_num_t motorPins[] = {GPIO_NUM_15, GPIO_NUM_2, GPIO_NUM_4, GPIO_NUM_16, GPIO_NUM_17, GPIO_NUM_5, GPIO_NUM_18, GPIO_NUM_19};
+const gpio_num_t motorPins[] = {GPIO_NUM_2, GPIO_NUM_4, GPIO_NUM_5, GPIO_NUM_18, GPIO_NUM_19};
 
 
 //======================================================================================================
@@ -347,9 +350,9 @@ void selectMuxChannel(uint8_t channel){
 
 void triggerSensor(){
 	digitalWrite(MuxSigPin, LOW);
-	delayMicroseconds(10);
+	delayMicroseconds(5);
 	digitalWrite(MuxSigPin, HIGH);
-	delayMicroseconds(500);
+	delayMicroseconds(10);
 	digitalWrite(MuxSigPin, LOW);
 }
 
@@ -487,8 +490,8 @@ void loop(){
 		for(int i = 0; i < NUM_SENSORS; i++){
 			// durVals.add(duration[i]);
 			// distCM.add(cm[i]);
-			// distIN.add(inches[i]);
-			distIN.add(duration[i]);
+			distIN.add(inches[i]);  
+			// distIN.add(duration[i]);
 		}
 		xSemaphoreGive(jsonSemaphore);// Give the JSON object back to the main control loop
 		xEventGroupSetBits(mainEventGroup, SEND_DATA);// Set the SEND_DATA bit to send data to the web UI
