@@ -9,7 +9,7 @@
 //=======================================================
 
 // var botPath = `ws://${window.location.hostname}/ws`;
-var botPath = `ws://192.168.1.4:80/ws`;
+var botPath = `ws://192.168.137.187:80/ws`;
 var websocket;
 
 window.addEventListener('load', onload);// Initialize the websocket when the page is loaded
@@ -65,7 +65,7 @@ function initWebSocket() {
 function onOpen(event) {
 	console.log('Websocket Connection opened');
 	document.getElementsByClassName('topnav')[0].style.backgroundColor = 'green';
-	setTimeout(getState, 1000);
+	// setTimeout(getState, 1000);
 }
 
 
@@ -90,6 +90,7 @@ function onMessage(event) {
 		console.log("Error parsing JSON: " + e);
 		console.log(event.data);
 	}
+	console.log(event.data);
 	var receivedObj = JSON.parse(event.data);
 	var keys = Object.keys(receivedObj);
 
@@ -102,7 +103,7 @@ function onMessage(event) {
 			// Check for special keys
 			if(key == "distIN"){// If the key is distIN, update the values of the sensor values in the JavaScript array
 				distValsIN = receivedObj[key];
-				distanceChart.series[0].setData(distValsIN);
+				lineDistanceChart.series[0].setData(distValsIN);
 				continue;
 			}
 
@@ -189,8 +190,8 @@ function prepCharts(){
 			labels: {
 				format: '{value} in'
 			},
-			min: 0,
-			max: 156
+			min: 0//,
+			// max: 156
 		},
 		plotOptions: {
 			spline: {

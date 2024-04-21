@@ -12,4 +12,4 @@ def home():
 	return render_template("WebUI.html")
 
 # app.run(host='192.168.137.230',debug=False)	
-app.run(host='10.9.72.7',debug=False)
+app.run(host='192.168.137.1',debug=False)

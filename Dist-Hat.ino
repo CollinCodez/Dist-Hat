@@ -55,8 +55,8 @@ const gpio_num_t motorPins[] = {GPIO_NUM_19, GPIO_NUM_18, GPIO_NUM_5, GPIO_NUM_1
 //	Variables
 //======================================================================================================
 
-#define WIFI_SSID "Dist-Hat" // Set the SSID of the WiFi network
-#define WIFI_PASSWORD NULL // Set the password of the WiFi network
+#define WIFI_SSID "COLLIN-LAPTOP" // Set the SSID of the WiFi network
+#define WIFI_PASSWORD "blinkyblinky" // Set the password of the WiFi network
 
 // Web Server Variables
 AsyncWebServer server(80);// Create AsyncWebServer object on port 80
@@ -90,7 +90,7 @@ const uint8_t motorPWMResolution = 10;			// 10 bit resolution for PWM. We may wa
 const uint16_t motorAbsMaxSpeed = (1 << (motorPWMResolution)) - 1;// Absolute maximum speed of the motor. 1023 for 10 bit PWM, 4095 for 12 bit PWM. This is the maximum value that can be sent to the motor driver
 
 
-const TickType_t readSensorsInterval = pdMS_TO_TICKS(1000);// Time in ms to wait between reading the sensors
+const TickType_t readSensorsInterval = pdMS_TO_TICKS(500);// Time in ms to wait between reading the sensors
 TickType_t lastLoopStartTime = 0;// Time in ms that the last loop started
 
 
@@ -100,16 +100,16 @@ TickType_t lastLoopStartTime = 0;// Time in ms that the last loop started
 
 // Function to setup the WiFi connection
 void initWiFi(){
-	WiFi.mode(WIFI_AP);// Set WiFi mode to Station (Connecting to some other access point, ie a laptop's hotspot)
+	// WiFi.mode(WIFI_AP);// Set WiFi mode to Station (Connecting to some other access point, ie a laptop's hotspot)
 	// WiFi.config(IPAddress(192,168,137,2), IPAddress(192,168,137,1),IPAddress(255,255,255,0));// Set Static IP Address (IP, Gateway, Subnet Mask). NOTE: This line does not work on Laptop Hotspot
-	// WiFi.begin(WIFI_SSID, WIFI_PASSWORD);// Start Wifi Connection
-	WiFi.softAP(WIFI_SSID, WIFI_PASSWORD);// Start Wifi Connection
-	// while(WiFi.status() != WL_CONNECTED){// Wait for WiFi to connect
-	// 	delay(500);
-	// 	#if SERIAL_ENABLED
-	// 		Serial.print(".");
-	// 	#endif
-	// }
+	WiFi.begin(WIFI_SSID, WIFI_PASSWORD);// Start Wifi Connection
+	// WiFi.softAP(WIFI_SSID, WIFI_PASSWORD);// Start Wifi Connection
+	while(WiFi.status() != WL_CONNECTED){// Wait for WiFi to connect
+		delay(500);
+		#if SERIAL_ENABLED
+			Serial.print(".");
+		#endif
+	}
 	#if SERIAL_ENABLED
 		Serial.println("\nConnected to WiFi\n");
 	#endif
@@ -164,6 +164,7 @@ void selectCommand(char* msg){
 		return;
 	}
 
+	ws.textAll("{\"message\": \"JSON Message Recieved\"}");// Send a message to the web UI that the JSON was invalid
 	// const char* cmd = doc["cmd"];// Get the command from the JSON message
 
 	// Check what the message is and set the appropriate bit in the event group
@@ -288,6 +289,21 @@ void initWebSocket() {
 
 
 
+// New Printf function for the program to use for logging via the web UI console, rather than serial
+int asyncLogPrintf(const char *format, va_list args) {
+	char buffer[256]; // Buffer to hold the formatted message
+	vsnprintf(buffer, sizeof(buffer), format, args); // Format the message
+	String message = "{\"message\": \"" + String(buffer) + "\"}"; // Add the JSON structure
+	message.replace("\n", "\\n"); // Replace newline characters with the escape sequence, as newlines are not valid in the JSON string
+
+	ws.textAll(message.c_str()); // Send the message to all WebSocket clients
+	return strlen(buffer); // Return the length of the formatted message
+}
+
+
+
+
+
 // Task to Send Data to Web UI
 void sendDataToUI(void *pvParameters){
 	#if SERIAL_ENABLED
@@ -295,7 +311,7 @@ void sendDataToUI(void *pvParameters){
 	#endif
 	while(true){
 		// Wait for the SEND_DATA bit to be set
-		EventBits_t bits = xEventGroupWaitBits(mainEventGroup, SEND_DATA, pdTRUE, pdFALSE, portMAX_DELAY);
+		EventBits_t bits = xEventGroupWaitBits(mainEventGroup, SEND_DATA, pdTRUE, pdFALSE, pdMS_TO_TICKS(readSensorsInterval));
 		if((bits & SEND_DATA) == SEND_DATA){
 			#if SERIAL_ENABLED
 				Serial.println("sendDataToUI Task: Sending Data to Web UI Triggered\n");
@@ -331,9 +347,9 @@ void selectMuxChannel(uint8_t channel){
 
 void triggerSensor(){
 	digitalWrite(MuxSigPin, LOW);
-	delayMicroseconds(5);
-	digitalWrite(MuxSigPin, HIGH);
 	delayMicroseconds(10);
+	digitalWrite(MuxSigPin, HIGH);
+	delayMicroseconds(500);
 	digitalWrite(MuxSigPin, LOW);
 }
 
@@ -349,7 +365,7 @@ void readDistance(uint8_t sensorNum){
 	#if SERIAL_ENABLED
 		Serial.printf("Distance for Sensor %d: ", sensorNum);
 		Serial.print(cm[sensorNum]);
-		Serial.print("cm");
+		Serial.print("cm\t");
 		Serial.print(inches[sensorNum]);
 		Serial.print("in");
 		Serial.println();
@@ -361,8 +377,9 @@ void readDistance(uint8_t sensorNum){
 
 
 void setMotorPWM(uint8_t motor){
-	uint16_t tmp = map(duration[motor], MaxDurration, 0, 0, motorAbsMaxSpeed);// Map the duration to the motor speed
+	uint16_t tmp = map(duration[motor], 0, MaxDurration, 0, motorAbsMaxSpeed);// Map the duration to the motor speed
 	ledcWrite(motor, tmp);	// Set the PWM signal to the motor
+  // ledcWrite(motor, motorAbsMaxSpeed);
 }
 
 
@@ -374,6 +391,8 @@ void setMotorPWM(uint8_t motor){
 //======================================================================================================
 
 void setup(){
+	esp_log_set_vprintf(asyncLogPrintf);// Change the location the default logging goes to to the asyncLogPrintf function, rather than printing to serial. 
+
 	// if SERIAL_ENABLED is defined, then Serial will be enabled	
 	#if SERIAL_ENABLED
 		Serial.begin(115200);
@@ -417,7 +436,7 @@ void setup(){
 		"Send Data to Server",	// Task Name
 		10000,					// Stack Size, should check utilization later with uxTaskGetStackHighWaterMark
 		NULL,					// Parameters
-		3,						// Priority 3, so it is at the same priority as the recieving data task. This is to help prevent the two from getting locked up
+		0,						// Priority 3, so it is at the same priority as the recieving data task. This is to help prevent the two from getting locked up
 		&sendDataToUITask,		// Task Handle
 		0						// Core 0
 	);
@@ -433,7 +452,7 @@ void setup(){
 		pinMode(motorPins[i], OUTPUT);
 		ledcSetup(i, motorPWMFreq, motorPWMResolution);	// Setup PWM for the motor
 		ledcAttachPin(motorPins[i], i);					// Attach the PWM signal to the pin
-		ledcWrite(i, 0);								// Set the PWM signal to 0
+		ledcWrite(i, 50);								// Set the PWM signal to 0
 	}
 
 	pinMode(MuxAPin, OUTPUT);
@@ -449,10 +468,11 @@ void setup(){
 
 
 void loop(){
+	// ws.textAll("{\"message\": \"Starting loop\"}");// Send a message to the web UI that the JSON was invalid
 	for(int i = 0; i < NUM_SENSORS; i++){
 		selectMuxChannel(i);
 		triggerSensor();
-		readDistance(echoPins[i]);
+		readDistance(i);
 		setMotorPWM(i);
 	}
 
@@ -467,11 +487,12 @@ void loop(){
 		for(int i = 0; i < NUM_SENSORS; i++){
 			// durVals.add(duration[i]);
 			// distCM.add(cm[i]);
-			distIN.add(inches[i]);
+			// distIN.add(inches[i]);
+			distIN.add(duration[i]);
 		}
 		xSemaphoreGive(jsonSemaphore);// Give the JSON object back to the main control loop
 		xEventGroupSetBits(mainEventGroup, SEND_DATA);// Set the SEND_DATA bit to send data to the web UI
 	}
 
-	vTaskDelayUntil(&lastLoopStartTime, readSensorsInterval);// Delay for readSensorsInterval between reads
+	// vTaskDelayUntil(&lastLoopStartTime, readSensorsInterval);// Delay for readSensorsInterval between reads
 }
