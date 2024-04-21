@@ -93,7 +93,7 @@ const uint8_t motorPWMResolution = 12;			// 10 bit resolution for PWM. We may wa
 const uint16_t motorAbsMaxSpeed = (1 << (motorPWMResolution)) - 1;// Absolute maximum speed of the motor. 1023 for 10 bit PWM, 4095 for 12 bit PWM. This is the maximum value that can be sent to the motor driver
 
 
-const TickType_t readSensorsInterval = pdMS_TO_TICKS(500);// Time in ms to wait between reading the sensors
+const TickType_t readSensorsInterval = pdMS_TO_TICKS(1000);// Time in ms to wait between reading the sensors
 TickType_t lastLoopStartTime = 0;// Time in ms that the last loop started
 
 
@@ -385,7 +385,7 @@ void readDistance(uint8_t sensorNum){
 
 
 void setMotorPWM(uint8_t motor){
-	uint16_t tmp = map(constrain(inches[motor], 24, 156), 156, 0, 0, motorAbsMaxSpeed);// Map the duration to the motor speed
+	uint16_t tmp = map(constrain(inches[motor], 6, 156), 10, 0, 0, motorAbsMaxSpeed);// Map the duration to the motor speed
 	ledcWrite(motor, tmp);	// Set the PWM signal to the motor
   // ledcWrite(motor, motorAbsMaxSpeed);
 }
@@ -399,7 +399,7 @@ void buzMotorTask(void *pvParameters){
 	uint8_t sensor = *tmp;
 
 	while(true){
-		if(inches[sensor] < 24){
+		if(inches[sensor] < 6){
 			ledcWrite(sensor, motorAbsMaxSpeed);
 			vTaskDelay(pdMS_TO_TICKS(50));
 			ledcWrite(sensor, 0);
