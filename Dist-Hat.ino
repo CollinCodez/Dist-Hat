@@ -380,7 +380,7 @@ void readDistance(uint8_t sensorNum){
 
 
 void setMotorPWM(uint8_t motor){
-	uint16_t tmp = map(duration[motor], 0, MaxDurration, 0, motorAbsMaxSpeed);// Map the duration to the motor speed
+	uint16_t tmp = map(inches[motor], 400, 0, 0, motorAbsMaxSpeed);// Map the duration to the motor speed
 	ledcWrite(motor, tmp);	// Set the PWM signal to the motor
   // ledcWrite(motor, motorAbsMaxSpeed);
 }

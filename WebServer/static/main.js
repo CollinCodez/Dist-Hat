@@ -190,8 +190,8 @@ function prepCharts(){
 			labels: {
 				format: '{value} in'
 			},
-			min: 0//,
-			// max: 156
+			min: 0,
+			max: 200
 		},
 		plotOptions: {
 			spline: {
