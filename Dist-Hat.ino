@@ -121,6 +121,11 @@ void initWiFi(){
 
 
 
+// Sensor ID's
+const uint8_t sensors[NUM_SENSORS] = {0, 1, 2, 3, 4, 5, 6, 7};
+
+
+
 // // Initialize SPIFFS
 // void initSPIFFS() {
 // 	if (!SPIFFS.begin(true)) {
@@ -474,7 +479,7 @@ void setup(){
 			buzMotorTask,		// Task Function
 			"Buzz Motor",		// Task Name
 			1000,				// Stack Size, should check utilization later with uxTaskGetStackHighWaterMark
-			(void*)i,			// Parameters
+			(void*)&sensors[i],		// Parameters
 			0,					// Priority 3, so it is at the same priority as the recieving data task. This is to help prevent the two from getting locked up
 			NULL,				// Task Handle
 			0					// Core 0
