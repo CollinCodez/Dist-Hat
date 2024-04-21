@@ -6,4 +6,4 @@
 platformio.ini
 .build
 build
-.vscode
+.vscode*
