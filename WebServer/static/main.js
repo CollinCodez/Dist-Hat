@@ -103,6 +103,12 @@ function onMessage(event) {
 			// Check for special keys
 			if(key == "distIN"){// If the key is distIN, update the values of the sensor values in the JavaScript array
 				distValsIN = receivedObj[key];
+				for(var i = 0; i < distValsIN.length; i++){
+					if(distValsIN[i] == 0){
+						distValsIN.splice(i, 1);
+						i--;
+					}
+				}
 				lineDistanceChart.series[0].setData(distValsIN);
 				continue;
 			}

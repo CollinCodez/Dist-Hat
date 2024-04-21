@@ -14,7 +14,7 @@
 
 #define SERIAL_ENABLED 1 // Set to 1 to enable Serial Monitor Debugging]
 
-#define NUM_SENSORS 5
+#define NUM_SENSORS 8
 
 
 //======================================================================================================
@@ -22,8 +22,8 @@
 //======================================================================================================
 
 // const gpio_num_t echoPins[] = {GPIO_NUM_36, GPIO_NUM_39, GPIO_NUM_34, GPIO_NUM_35, GPIO_NUM_32, GPIO_NUM_33, GPIO_NUM_25, GPIO_NUM_26};
-// const gpio_num_t echoPins[] = {GPIO_NUM_26, GPIO_NUM_25, GPIO_NUM_33, GPIO_NUM_32, GPIO_NUM_35, GPIO_NUM_34, GPIO_NUM_39, GPIO_NUM_36};
-const gpio_num_t echoPins[] = {GPIO_NUM_25, GPIO_NUM_33, GPIO_NUM_34, GPIO_NUM_39, GPIO_NUM_36};
+const gpio_num_t echoPins[] = {GPIO_NUM_26, GPIO_NUM_25, GPIO_NUM_33, GPIO_NUM_32, GPIO_NUM_35, GPIO_NUM_34, GPIO_NUM_39, GPIO_NUM_36};
+// const gpio_num_t echoPins[] = {GPIO_NUM_25, GPIO_NUM_33, GPIO_NUM_34, GPIO_NUM_39, GPIO_NUM_36};
 
 
 const gpio_num_t MuxAPin = GPIO_NUM_27;// LSB of the Mux
@@ -32,8 +32,8 @@ const gpio_num_t MuxCPin = GPIO_NUM_12;// MSB of the Mux
 const gpio_num_t MuxSigPin = GPIO_NUM_13;
 
 // const gpio_num_t motorPins[] = {GPIO_NUM_19, GPIO_NUM_18, GPIO_NUM_5, GPIO_NUM_17, GPIO_NUM_16, GPIO_NUM_4, GPIO_NUM_2, GPIO_NUM_15};
-// const gpio_num_t motorPins[] = {GPIO_NUM_15, GPIO_NUM_2, GPIO_NUM_4, GPIO_NUM_16, GPIO_NUM_17, GPIO_NUM_5, GPIO_NUM_18, GPIO_NUM_19};
-const gpio_num_t motorPins[] = {GPIO_NUM_2, GPIO_NUM_4, GPIO_NUM_5, GPIO_NUM_18, GPIO_NUM_19};
+const gpio_num_t motorPins[] = {GPIO_NUM_15, GPIO_NUM_2, GPIO_NUM_4, GPIO_NUM_16, GPIO_NUM_17, GPIO_NUM_5, GPIO_NUM_18, GPIO_NUM_19};
+// const gpio_num_t motorPins[] = {GPIO_NUM_2, GPIO_NUM_4, GPIO_NUM_5, GPIO_NUM_18, GPIO_NUM_19};
 
 
 //======================================================================================================
