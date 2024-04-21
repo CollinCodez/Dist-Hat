@@ -518,7 +518,7 @@ void loop(){
 		selectMuxChannel(i);
 		triggerSensor();
 		readDistance(i);
-		setMotorPWM(i);
+		// setMotorPWM(i);
 	}
 
 	// prep data to send to web server
